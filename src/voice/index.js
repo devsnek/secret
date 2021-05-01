@@ -247,6 +247,9 @@ class VoiceState {
         break;
       case Voice.Opcodes.RESUMED:
         break;
+      case Voice.Opcodes.SPEAKING:
+        this.readable.connect(data.d.ssrc, data.d.user_id);
+        break;
       case Voice.Opcodes.VIDEO:
         this.readable.connect(data.d.audio_ssrc, data.d.user_id);
         break;

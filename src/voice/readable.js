@@ -1,12 +1,13 @@
 'use strict';
 
 const sodium = require('sodium');
-const stream = require('stream');
+const { Readable: StreamReadable } = require('stream');
 
 class Readable {
   constructor(voiceState) {
     this.voiceState = voiceState;
 
+    this.streamMap = new Map();
     this.ssrcMap = new Map();
     this.nonce = Buffer.alloc(24);
   }
@@ -43,9 +44,13 @@ class Readable {
   }
 
   onPacket(packet) {
-    const ssrc = packet.readUint32BE(0);
-    const entry = this.ssrcMap.get(ssrc);
-    if (!entry?.stream) {
+    const ssrc = packet.readUint32BE(8);
+    const userID = this.ssrcMap.get(ssrc);
+    if (!userID) {
+      return;
+    }
+    const stream = this.streamMap.get(userID);
+    if (!stream) {
       return;
     }
 
@@ -62,42 +67,37 @@ class Readable {
         }
         offset += 1 + (0b1111 & (byte >> 4));
       }
-      offset += 1;
+      if (data[offset] === 0x00 || data[offset] === 0x02) {
+        offset += 1;
+      }
 
       data = data.slice(offset);
     }
 
-    entry.stream.push(data);
+    stream.push(data);
   }
 
-  get(user) {
-    const userID = user.id || user;
-    for (const [, entry] of this.ssrcMap) {
-      if (entry.userID === userID) {
-        if (!entry.stream) {
-          entry.stream = new stream.Readable({ read() {} });
-        }
-        return entry.stream;
-      }
+  get(userID) {
+    if (!this.streamMap.has(userID)) {
+      this.streamMap.set(userID, new StreamReadable({ read() {} }));
     }
-    return undefined;
+    return this.streamMap.get(userID);
   }
 
   connect(ssrc, userID) {
-    this.ssrcMap.set(ssrc, {
-      userID,
-      stream: undefined,
-    });
+    this.ssrcMap.set(ssrc, userID);
   }
 
   disconnect(ssrc) {
-    if (this.ssrcMap.has(ssrc)) {
-      const entry = this.ssrcMap.get(ssrc);
-      if (entry.stream) {
-        entry.stream.push(null);
+    const userID = this.ssrcMap.get(ssrc);
+    if (userID) {
+      this.ssrcMap.delete(ssrc);
+      const stream = this.streamMap.get(userID);
+      if (stream) {
+        this.streamMap.delete(userID);
+        stream.push(null);
       }
     }
-    this.ssrcMap.delete(ssrc);
   }
 }
 

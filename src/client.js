@@ -39,6 +39,12 @@ class GatewayClient extends BaseClient {
     this.gateway = new Gateway(this, options.intents);
     this.user = undefined;
     this.voiceStates = new Map();
+
+    this.on('GUILD_DELETE', (guild) => {
+      if (!guild.data.unavailable) {
+        this.voiceStates.delete(guild.data.id);
+      }
+    });
   }
 
   async login(token) {
