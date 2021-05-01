@@ -1,0 +1,23 @@
+{
+  "name": "secret",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/index.js",
+  "author": "snek",
+  "license": "MIT",
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.6.1",
+    "sodium": "^3.0.2",
+    "ws": "^7.4.4",
+    "zlib-sync": "^0.1.7"
+  },
+  "devDependencies": {
+    "eslint": "^7.25.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  },
+  "scripts": {
+    "lint": "eslint src"
+  }
+}
