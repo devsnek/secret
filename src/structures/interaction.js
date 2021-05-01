@@ -9,7 +9,7 @@ const { User } = require('./user');
 const { Webhook } = require('./webhook');
 
 class Interaction extends Structure {
-  constructor(client, data) {
+  constructor(client, data, syncHandle) {
     super(client, data);
 
     this.webhook = new Webhook(client, {
@@ -19,12 +19,18 @@ class Interaction extends Structure {
     this.user = data.user ? new User(client, data.user) : null;
     this.member = data.member ? new GuildMember(client, data.member) : null;
     this.message = data.message ? new Message(client, data.message) : null;
+
+    this.syncHandle = syncHandle;
   }
 
   async reply(data) {
-    await this.client.rest.post`/interactions/${this.data.id}/${this.data.token}/callback`({
-      data,
-    });
+    if (this.syncHandle) {
+      await this.syncHandle.reply(data);
+    } else {
+      await this.client.rest.post`/interactions/${this.data.id}/${this.data.token}/callback`({
+        data,
+      });
+    }
   }
 
   async getChannel() {
