@@ -22,7 +22,6 @@ class Writable extends stream.Writable {
     this.audioTimestamp = 0;
     this.startTime = 0;
     this.corkTime = 0;
-    this.corkedTime = 0;
   }
 
   _write(chunk, encoding, done) {
@@ -35,8 +34,7 @@ class Writable extends stream.Writable {
     const packet = this.createPacket(chunk);
     this.voiceState.sendUDP(packet);
 
-    const delay = (20 + (this.audioSequence * 20))
-      - (Date.now() - this.startTime - this.corkedTime);
+    const delay = (20 + (this.audioSequence * 20)) - (Date.now() - this.startTime);
     setTimeout(done, delay);
 
     this.audioSequence += 1;
@@ -99,7 +97,7 @@ class Writable extends stream.Writable {
     while (this.writableCorked > 0) {
       super.uncork();
     }
-    this.corkedTime += Date.now() - this.corkTime;
+    this.startTime += Date.now() - this.corkTime;
     this.corkTime = 0;
   }
 }
