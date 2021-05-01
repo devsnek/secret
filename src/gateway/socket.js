@@ -38,9 +38,10 @@ class GatewaySocket {
     if (this.socket) {
       try {
         this.socket.close(code);
-      } finally {
-        this.socket = undefined;
+      } catch {
+        // nothing
       }
+      this.socket = undefined;
     }
   }
 
@@ -149,7 +150,6 @@ class GatewaySocket {
         switch (packet.t) {
           case 'READY':
             this.sessionID = packet.d.session_id;
-            this.client.applicationID = packet.d.application.id;
             this.client.user = new User(this.client, packet.d.user);
             this.client.emit(packet.t, transform(this.client, packet.t, packet.d));
             break;

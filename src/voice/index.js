@@ -39,7 +39,7 @@ class VoiceState {
 
   async connect(channelID) {
     if (this.ws) {
-      return;
+      this.disconnect();
     }
 
     this.client.gateway.forGuild(this.guildID).send({
@@ -96,9 +96,10 @@ class VoiceState {
   disconnect() {
     try {
       this.ws.close();
-    } finally {
-      this.ws = undefined;
+    } catch {
+      // nothing
     }
+    this.ws = undefined;
 
     if (this.udpKeepAliveInterval !== undefined) {
       clearInterval(this.udpKeepAliveInterval);
@@ -107,9 +108,10 @@ class VoiceState {
 
     try {
       this.udp.close();
-    } finally {
-      this.udp = undefined;
+    } catch {
+      // nothing
     }
+    this.udp = undefined;
   }
 
   getVoiceStateUpdate() {

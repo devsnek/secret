@@ -18,9 +18,17 @@ class BaseClient extends EventEmitter {
     return new Channel(this, data);
   }
 
+  async setApplicationCommands(commands) {
+    await this.rest.put`/applications/${this.applicationID}/commands`({
+      data: commands,
+    });
+  }
+
   async login(token) {
     this.token = token;
-    await this.gateway.connect();
+
+    const app = await this.rest.get`/oauth2/applications/@me`();
+    this.applicationID = app.id;
   }
 }
 
@@ -29,7 +37,13 @@ class GatewayClient extends BaseClient {
     super(options);
 
     this.gateway = new Gateway(this, options.intents);
+    this.user = undefined;
     this.voiceStates = new Map();
+  }
+
+  async login(token) {
+    await super.login(token);
+    await this.gateway.connect();
   }
 }
 
