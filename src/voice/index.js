@@ -38,6 +38,8 @@ class VoiceState {
   }
 
   async connect(channelID) {
+    this.writable.cork();
+
     if (this.ws) {
       this.disconnect();
     }
@@ -67,6 +69,7 @@ class VoiceState {
       this.resolveConnect = resolve;
     });
     this.resolveConnect = undefined;
+    this.writable.uncork();
   }
 
   connectWS() {
@@ -80,6 +83,9 @@ class VoiceState {
         case 4009:
           this.mode = undefined;
           this.connectWS();
+          break;
+        case 1001:
+          this.mode = undefined;
           break;
         case 4010:
         case 4011:
@@ -95,7 +101,7 @@ class VoiceState {
 
   disconnect() {
     try {
-      this.ws.close();
+      this.ws.close(1001);
     } catch {
       // nothing
     }
