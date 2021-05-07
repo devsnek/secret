@@ -3,6 +3,8 @@
 const { Channel } = require('./channel');
 const { Structure } = require('./structure');
 
+class GuildRole extends Structure {}
+
 class Guild extends Structure {
   async getChannels() {
     const data = this.data.channels || await this.client.rest.get`/guilds/${this.data.id}/channels`();
@@ -16,4 +18,4 @@ class Guild extends Structure {
   }
 }
 
-module.exports = { Guild };
+module.exports = { Guild, GuildRole };

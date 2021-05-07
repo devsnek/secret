@@ -4,7 +4,12 @@ const { EPOCH } = require('../constants');
 
 class Structure {
   constructor(client, data) {
-    this.client = client;
+    Object.defineProperty(this, 'client', {
+      value: client,
+      writable: true,
+      enumerable: false,
+      configurable: true,
+    });
     this.data = data;
 
     if (data.id) {

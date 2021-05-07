@@ -16,8 +16,8 @@ class Interaction extends Structure {
       id: data.application_id,
       token: data.token,
     });
-    this.user = data.user ? new User(client, data.user) : null;
     this.member = data.member ? new GuildMember(client, data.member) : null;
+    this.user = data.user ? new User(client, data.user) : this.member?.user;
     this.message = data.message ? new Message(client, data.message) : null;
 
     this.syncHandle = syncHandle;

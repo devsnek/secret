@@ -3,6 +3,7 @@
 module.exports = {
   root: true,
   extends: 'airbnb-base',
+  plugins: ['@babel'],
   parserOptions: {
     ecmaVersion: 2021,
     sourceType: 'script',
@@ -72,6 +73,8 @@ module.exports = {
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'max-classes-per-file': 'off',
+    'no-unused-expressions': 'off',
+    '@babel/no-unused-expressions': 'error',
   },
   globals: {
     WebAssembly: false,

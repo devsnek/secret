@@ -5,6 +5,7 @@ const https = require('https');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { setTimeout } = require('timers/promises');
+const { APIError } = require('./error');
 
 const { Rest: { API, VERSION, USER_AGENT } } = require('../constants');
 
@@ -137,10 +138,7 @@ class Rest {
     bucket.update(r);
 
     if (!r.ok) {
-      const e = new Error(r.statusText || 'Invalid response');
-      e.response = r;
-      e.body = rbody;
-      throw e;
+      throw new APIError(r, rbody);
     }
 
     return rbody;
