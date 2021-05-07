@@ -126,7 +126,7 @@ class ApplicationCommandBuilder {
     }
 
     if (guild.length > 0 || global.length > 0) {
-      this.client.on('INTERACTION_CREATE', (interaction) => {
+      this.client.on('INTERACTION_CREATE', async (interaction) => {
         if (interaction.data.type !== InteractionTypes.APPLICATION_COMMAND) {
           return;
         }
@@ -146,31 +146,42 @@ class ApplicationCommandBuilder {
           return;
         }
 
+        const { resolved } = interaction.data.data;
+        const asyncOps = [];
         const args = {};
-
-        options?.forEach((o) => {
-          let { value } = o;
-
-          switch (o.type) {
+        options?.forEach((option) => {
+          switch (option.type) {
             case ApplicationCommandOptionTypes.USER:
-              value = new User(this.client, interaction.data.data.resolved.users[value]);
-              break;
-            case ApplicationCommandOptionTypes.CHANNEL:
-              value = new Channel(this.client, interaction.data.data.resolved.channels[value]);
-              value.data.guild_id ||= interaction.data.guild_id;
+              args[option.name] = new User(this.client, resolved.users[option.value]);
               break;
             case ApplicationCommandOptionTypes.ROLE:
-              value = new GuildRole(this.client, interaction.data.data.resolved.roles[value]);
+              args[option.name] = new GuildRole(this.client, resolved.roles[option.value]);
+              break;
+            case ApplicationCommandOptionTypes.MENTIONABLE:
+              args[option.name] = resolved.users[option.value]
+                ? new User(this.client, resolved.users[option.value])
+                : new GuildRole(this.client, resolved.roles[option.value]);
+              break;
+            case ApplicationCommandOptionTypes.CHANNEL:
+              asyncOps.push((async () => {
+                try {
+                  args[option.name] = await this.client.getChannel(option.value);
+                } catch {
+                  const c = new Channel(this.client, resolved.channels[option.value]);
+                  c.data.guild_id ||= interaction.data.guild_id;
+                  args[option.name] = c;
+                }
+              })());
               break;
             default:
+              args[option.name] = option.value;
               break;
           }
-
-          args[o.name] = value;
         });
 
-        Promise.resolve(command.handler(interaction, args))
-          .catch((e) => this.client.emit('error', e));
+        await Promise.all(asyncOps);
+
+        await command.handler(interaction, args);
       });
     }
   }
