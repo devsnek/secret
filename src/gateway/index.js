@@ -9,7 +9,6 @@ class Gateway {
   constructor(client, intents) {
     this.client = client;
     this.intents = new Intents(intents);
-    this.endpoint = undefined;
     this.shardCount = -1;
     this.maxConcurrency = Infinity;
     this.shards = [];
@@ -35,10 +34,9 @@ class Gateway {
   }
 
   async connect() {
-    if (!this.endpoint) {
+    if (this.maxConcurrency === Infinity) {
       const data = await this.client.rest.get`/gateway/bot`();
       this.shardCount = data.shards;
-      this.endpoint = data.url;
       this.maxConcurrency = data.session_start_limit.max_concurrency;
       this.remaining = this.maxConcurrency;
     }

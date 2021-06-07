@@ -23,7 +23,8 @@ GatewayIntents.FIELDS = [
 ];
 
 const Gateway = {
-  VERSION: 8,
+  VERSION: 9,
+  ENDPOINT: 'wss://gateway.discord.gg',
   DEVICE: packageInfo.name,
   Intents: GatewayIntents,
   Opcodes: {

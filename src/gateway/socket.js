@@ -26,7 +26,7 @@ class GatewaySocket {
       chunkSize: 65535,
       flush: zlib.Z_SYNC_FLUSH,
     });
-    this.socket = new WebSocket(`${this.gateway.endpoint}?v=${Gateway.VERSION}&encoding=json&compress=zlib-stream`);
+    this.socket = new WebSocket(`${Gateway.ENDPOINT}?v=${Gateway.VERSION}&encoding=json&compress=zlib-stream`);
     this.socket.onopen = this.onOpen.bind(this);
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onerror = this.onError.bind(this);
