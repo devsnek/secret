@@ -17,9 +17,7 @@ class Webhook extends Structure {
   }
 
   async sendMessage(options) {
-    const raw = await createRawMessage(this.client, options, {
-      multiEmbed: true,
-    });
+    const raw = await createRawMessage(this.client, options);
     const data = await this.client.rest.post`/webhooks/${this.data.id}/${this.data.token}`({
       authenticate: false,
       query: { wait: true },

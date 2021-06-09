@@ -17,7 +17,6 @@ class Message extends Structure {
     const raw = await createRawMessage(this.client, options, {
       channelID: this.data.channel_id,
       messageID: this.id,
-      multiEmbed: !!this.data.webhook_id,
     });
     if (this.data.webhook_id) {
       const hook = await this.client.rest.get`/webhooks/${this.data.webhook_id}`();

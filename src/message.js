@@ -1,6 +1,6 @@
 'use strict';
 
-async function createRawMessage(client, options = {}, { channelID, messageID, multiEmbed }) {
+async function createRawMessage(client, options = {}, { channelID, messageID }) {
   if (typeof options.then === 'function') {
     if (channelID) {
       await this.client.rest.post`/channels/${channelID}/typing`();
@@ -16,8 +16,7 @@ async function createRawMessage(client, options = {}, { channelID, messageID, mu
       content: options.content,
       nonce: options.nonce,
       tts: options.tts,
-      embed: multiEmbed ? undefined : options.embed,
-      embeds: multiEmbed ? options.embeds : undefined,
+      embeds: options.embeds,
       allowed_mentions: options.allowedMentions,
       message_reference: messageID ? { message_id: messageID } : undefined,
       flags: options.flags,

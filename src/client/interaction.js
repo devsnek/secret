@@ -147,6 +147,7 @@ class ApplicationCommandBuilder {
         }
 
         const { resolved } = interaction.data.data;
+        const gets = {};
         const asyncOps = [];
         const args = {};
         options?.forEach((option) => {
@@ -165,7 +166,8 @@ class ApplicationCommandBuilder {
             case ApplicationCommandOptionTypes.CHANNEL:
               asyncOps.push((async () => {
                 try {
-                  args[option.name] = await this.client.getChannel(option.value);
+                  gets[option.value] ||= this.client.getChannel(option.value);
+                  args[option.name] = await gets[option.value];
                 } catch {
                   const c = new Channel(this.client, resolved.channels[option.value]);
                   c.data.guild_id ||= interaction.data.guild_id;

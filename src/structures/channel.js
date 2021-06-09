@@ -7,7 +7,6 @@ class Channel extends Structure {
   async sendMessage(options) {
     const raw = await createRawMessage(this.client, options, {
       channelID: this.data.id,
-      multiEmbed: false,
     });
     const data = await this.client.rest.post`/channels/${this.data.id}/messages`({
       data: raw.data,
@@ -60,11 +59,11 @@ class Channel extends Structure {
 
   async join() {
     const { VoiceState } = require('../voice');
-    if (!this.client.voiceStates.has(this.data.guild_id)) {
+    if (!this.client.state.voice.has(this.data.guild_id)) {
       const state = new VoiceState(this.client, this.data.guild_id);
-      this.client.voiceStates.set(this.data.guild_id, state);
+      this.client.state.voice.set(this.data.guild_id, state);
     }
-    const state = this.client.voiceStates.get(this.data.guild_id);
+    const state = this.client.state.voice.get(this.data.guild_id);
     await state.connect(this.data.id);
     return state;
   }

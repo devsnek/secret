@@ -1,6 +1,7 @@
 'use strict';
 
 const { Gateway } = require('../gateway');
+const { State } = require('../state');
 const { BaseClient } = require('./base');
 const { ApplicationCommandBuilder } = require('./interaction');
 
@@ -9,7 +10,7 @@ class GatewayClient extends BaseClient {
     super(options);
 
     this.gateway = new Gateway(this, options.intents);
-    this.voiceStates = new Map();
+    this.state = new State(this);
 
     this.commands = new ApplicationCommandBuilder(this);
 
