@@ -33,7 +33,7 @@ class GatewaySocket {
     this.socket.onclose = this.onClose.bind(this);
   }
 
-  disconnect(code = 4009) {
+  disconnect(code = 1001) {
     clearInterval(this.heartbeatInterval);
     if (this.socket) {
       try {
@@ -63,6 +63,8 @@ class GatewaySocket {
 
   onClose(e) {
     switch (e.code) {
+      case 1001:
+        break;
       case 1000:
       case 4006:
       case 4007:
@@ -134,14 +136,7 @@ class GatewaySocket {
         break;
       case Gateway.Opcodes.INVALID_SESSION:
         if (packet.d && this.sessionID) {
-          this.send({
-            op: Gateway.Opcodes.RESUME,
-            d: {
-              token: this.client.token,
-              session_id: this.sessionID,
-              seq: this.sequence,
-            },
-          });
+          this.connect();
         } else {
           this.gateway.spawnShard(this.shardID);
         }
