@@ -87,7 +87,7 @@ class GatewaySocket {
   }
 
   onPacket(packet) {
-    if (packet.s > this.seqence) {
+    if (packet.s > this.sequence) {
       this.sequence = packet.s;
     }
 
