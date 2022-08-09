@@ -23,8 +23,6 @@ class VoiceState {
     this.sessionID = undefined;
     this.token = undefined;
     this.ssrc = undefined;
-    this.udpPort = undefined;
-    this.udpIP = undefined;
     this.mode = undefined;
     this.secretKey = undefined;
 
@@ -32,6 +30,7 @@ class VoiceState {
     this.speakingState = undefined;
 
     this.resolveConnect = undefined;
+    this.rejectConnect = undefined;
 
     this.writable = new Writable(this);
     this.readable = new Readable(this);
@@ -65,10 +64,12 @@ class VoiceState {
 
     this.connectWS();
 
-    await new Promise((resolve) => {
+    await new Promise((resolve, reject) => {
       this.resolveConnect = resolve;
+      this.rejectConnect = reject;
     });
     this.resolveConnect = undefined;
+    this.rejectConnect = undefined;
     this.writable.uncork();
   }
 
@@ -157,7 +158,7 @@ class VoiceState {
   }
 
   sendUDP(packet) {
-    this.udp.send(packet, 0, packet.length, this.udpPort, this.udpIP);
+    this.udp.send(packet, 0, packet.length);
   }
 
   onWebSocketMessage(message) {
@@ -193,16 +194,16 @@ class VoiceState {
         break;
       }
       case Voice.Opcodes.READY: {
-        this.udpPort = data.d.port;
-        this.udpIP = data.d.ip;
         this.ssrc = data.d.ssrc;
 
         this.mode = data.d.modes.find((m) => Voice.SUPPORTED_MODES.includes(m));
         if (!this.mode) {
-          throw new Error('Unable to select voice mode');
+          this.rejectConnect(new Error('Unable to select voice mode'));
+          return;
         }
 
         this.udp = createSocket('udp4');
+        this.udp.connect(data.d.port, data.d.ip);
 
         this.udp.once('message', (packet) => {
           const nil = packet.indexOf(0, 8);
@@ -230,11 +231,14 @@ class VoiceState {
           }, UDP_KEEP_ALIVE_INTERVAL);
         });
 
-        const echo = Buffer.alloc(74);
-        echo.writeUInt16BE(1, 0);
-        echo.writeUInt16BE(70, 2);
-        echo.writeUInt32BE(this.ssrc, 4);
-        this.sendUDP(echo);
+        this.udp.once('connect', () => {
+          const echo = Buffer.alloc(74);
+          echo.writeUInt16BE(1, 0);
+          echo.writeUInt16BE(70, 2);
+          echo.writeUInt32BE(this.ssrc, 4);
+          this.sendUDP(echo);
+        });
+
         break;
       }
       case Voice.Opcodes.SELECT_PROTOCOL_ACK:

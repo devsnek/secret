@@ -23,8 +23,7 @@ GatewayIntents.FIELDS = [
 ];
 
 const Gateway = {
-  VERSION: 9,
-  ENDPOINT: 'wss://gateway.discord.gg',
+  VERSION: 10,
   DEVICE: packageInfo.name,
   Intents: GatewayIntents,
   Opcodes: {
@@ -43,7 +42,7 @@ const Gateway = {
 };
 
 const Rest = {
-  VERSION: 9,
+  VERSION: 10,
   API: 'https://discord.com/api',
   USER_AGENT: `DiscordBot (${packageInfo.name}, ${packageInfo.version}) Node.js/${process.version}`,
 };

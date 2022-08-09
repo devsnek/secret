@@ -18,6 +18,11 @@ class GatewaySocket {
     this.sequence = -1;
     this.sessionID = undefined;
     this.lastHeartbeatAcked = false;
+    this.resumeGatewayURL = undefined;
+  }
+
+  get endpoint() {
+    return this.resumeGatewayURL ?? this.gateway.endpoint;
   }
 
   connect() {
@@ -26,7 +31,7 @@ class GatewaySocket {
       chunkSize: 65535,
       flush: zlib.Z_SYNC_FLUSH,
     });
-    this.socket = new WebSocket(`${Gateway.ENDPOINT}?v=${Gateway.VERSION}&encoding=json&compress=zlib-stream`);
+    this.socket = new WebSocket(`${this.endpoint}?v=${Gateway.VERSION}&encoding=json&compress=zlib-stream`);
     this.socket.onopen = this.onOpen.bind(this);
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onerror = this.onError.bind(this);
@@ -71,8 +76,10 @@ class GatewaySocket {
       case 4009:
         this.gateway.spawnShard(this.shardID);
         break;
+      case 4004:
       case 4010:
       case 4011:
+      case 4012:
       case 4013:
       case 4014:
         throw new Error(e.reason);
@@ -145,6 +152,7 @@ class GatewaySocket {
         switch (packet.t) {
           case 'READY':
             this.sessionID = packet.d.session_id;
+            this.resumeGatewayURL = packet.d.resume_gateway_url;
             this.client.user = new User(this.client, packet.d.user);
             this.client.emit(packet.t, transform(this.client, packet.t, packet.d));
             break;
